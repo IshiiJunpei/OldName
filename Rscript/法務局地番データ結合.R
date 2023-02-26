@@ -1,0 +1,89 @@
+library(tidyverse)
+library(sf)
+library(mapview)
+
+# データを結合する
+# read data
+map <-
+  list.files(path = "data/01363-4401_assabu/",  
+           pattern = ".geojson",
+           full.names = T) %>%  # geojsonファイルをリスト化
+  map(st_read) %>%  # geojsonファイルにst_readを適用
+  bind_rows() %>%  # geojsonファイルを結合
+  st_transform(3100) %>% # 座標系をJGD2000UTMzone54に変換
+  dplyr::select(市区町村名, 大字名, 丁目名, 小字名, 地番)
+
+# write data
+  # st_write(
+  #   obj = map,
+  #   driver = "GPKG",
+  #   append = FALSE ,
+  #   "output/01363/01363_JGD2000utm54.gpkg")  # ファイルを書き出し
+
+
+# 旧地名データを読み込み
+old_name <-
+  read_csv(
+    "data/OldNameAssabu/OldName.csv",
+    locale = locale(encoding="utf8")
+  )
+
+# 結合キーになる住所地番号を結合
+# Old_Tiban Data make join key
+old_name_jk <-
+  unite(
+    data = old_name,
+    col = "join_key",         # 新しく作られる列の名前
+    c("字", "地番"),          # 結合する列
+    sep = "-",                   # 区切りに使われる記号（ここでは区切りなし）
+    remove = FALSE,                # TRUEの場合、結合元の列をデータフレームから削除する
+    na.rm = TRUE                  # TRUEの場合、欠損値を無視して結合する
+  )
+
+
+# 旧字名を結合する
+# 地番を番地と号に分ける
+map_bango <-
+  separate(
+    data = map, col = 地番, into = c("番", "号"), sep = "-"
+  )
+# Map Data make join key
+map_jk <-
+  unite(
+    data = map_bango,
+    col = "join_key",        
+    c("大字名", "丁目名", "小字名", "番"),
+    sep = "-",                  
+    remove = FALSE,               
+    na.rm = TRUE
+  )
+
+# Left Join
+map_join <-
+  map_jk %>%
+  left_join(old_name_jk, by = "join_key") 
+
+# 同じ旧地名を結合する
+map_merge <-
+  map_join %>%
+  drop_na(旧地名) %>%
+  group_by(旧地名) %>%
+  summarise() 
+
+
+# write data gpkd
+st_write(
+  obj = map_merge,
+  driver = "GPKG",
+  append = FALSE ,
+  "output/01363/AssabuOldName_JGD2000utm54.gpkg")  # ファイルを書き出し
+
+# write data kml
+# 座標系変換
+map_3857 <-
+  st_transform(map_merge, 3857)
+st_write(
+  obj = map_merge,
+  driver = "KML",
+  append = FALSE ,
+  "output/01363/AssabuOldName_pseMer.kml")  # ファイルを書き出し

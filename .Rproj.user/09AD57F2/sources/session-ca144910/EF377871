@@ -1,0 +1,27 @@
+{
+    "id": "EF377871",
+    "path": "~/R_data/230130法務省地番データ結合/Rscript/法務局地番データ結合.R",
+    "project_path": "Rscript/法務局地番データ結合.R",
+    "type": "r_source",
+    "hash": "0",
+    "contents": "",
+    "dirty": true,
+    "created": 1675077492335.0,
+    "source_on_save": false,
+    "relative_order": 1,
+    "properties": {
+        "tempName": "Untitled1",
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "96,0",
+        "scrollLine": "73"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1677146457,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1677378420961,
+    "read_only": false,
+    "read_only_alternatives": []
+}
